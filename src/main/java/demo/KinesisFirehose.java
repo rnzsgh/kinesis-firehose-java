@@ -39,7 +39,6 @@ import java.util.concurrent.ExecutionException;
 
 public class KinesisFirehose {
 
-  private static final int MAX_QUEUE_SIZE = 30000;
   private static final int RECORD_LENGTH = 1000;
   private static final int RECORD_BATCH_COUNT = 500;
   private static final long READ_TIMEOUT_MS = 250;
@@ -50,7 +49,7 @@ public class KinesisFirehose {
   private static final String FIREHOSE_STREAM_NAME = "test";
 
   public static void main(final String [] pArgs) throws Exception {
-    final LinkedBlockingQueue<Record> queue = new LinkedBlockingQueue<>(MAX_QUEUE_SIZE);
+    final LinkedBlockingQueue<Record> queue = new LinkedBlockingQueue<>(Integer.MAX_VALUE); // This will blow out your memory
 
     for (int idx=0; idx < LOADER_THREADS; idx++) {
       new Loader(
