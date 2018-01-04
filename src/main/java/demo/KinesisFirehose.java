@@ -140,6 +140,10 @@ public class KinesisFirehose {
           idx++;
         }
 
+        if (failed.size() > 0) {
+          System.out.println("Failed count: " + failed.size());
+        }
+
         return failed;
 
       } catch (final CancellationException ce) {
