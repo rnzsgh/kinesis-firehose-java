@@ -49,7 +49,7 @@ public class KinesisFirehose {
 
   private static final int RECORD_COUNT = 100000000;
   private static final int RECORD_LENGTH = 1000;
-  private static final int RECORD_BATCH_COUNT = 500;
+  private static final int RECORD_BATCH_COUNT = 10;
   private static final long READ_TIMEOUT_MS = 250;
   private static final long BATCH_TIMEOUT_MS = 1000;
   private static final long BUFFER_TIMEOUT_MS = 250;
@@ -178,7 +178,7 @@ public class KinesisFirehose {
 
         while (_running.get()) {
 
-          if (futures.size() >= 4) {
+          if (futures.size() >= 500) {
             if (checkFutures(futures)) {
               sleep(_readTimeout);
               continue;
