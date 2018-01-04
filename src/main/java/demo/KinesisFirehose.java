@@ -119,7 +119,7 @@ public class KinesisFirehose {
     /**
      * Returns records unable to send.
      */
-    private LinkedList<Record> sendRecords(final LinkedList<Record> pRecords) throws Exception {
+    private void sendRecords(final LinkedList<Record> pRecords) throws Exception {
 
       try {
 
@@ -133,25 +133,27 @@ public class KinesisFirehose {
 
         int idx = 0;
         for (final PutRecordBatchResponseEntry entry : result.getRequestResponses()) {
-
           if (entry.getErrorCode() != null) {
             failed.add(pRecords.get(idx));
           }
           idx++;
         }
 
+        pRecords.clear();
+        pRecords.addAll(failed);
+
         if (failed.size() > 0) {
           System.out.println("Failed count: " + failed.size());
         }
 
-        return failed;
+        sendRecords(pRecords);
 
       } catch (final CancellationException ce) {
         ce.printStackTrace();
-        return (LinkedList<Record>)pRecords.stream().collect(Collectors.toList());
+        sendRecords(pRecords);
       } catch (final ExecutionException ee) {
         ee.printStackTrace();
-        return (LinkedList<Record>)pRecords.stream().collect(Collectors.toList());
+        sendRecords(pRecords);
       }
     }
 
@@ -175,17 +177,7 @@ public class KinesisFirehose {
             flushCount++;
             System.out.println("Flushing: " + flushCount + " - records: " + records.size());
 
-            LinkedList<Record> failed = records;
-
-            do {
-
-              failed = sendRecords(records);
-
-              records = failed;
-
-            } while (failed.size() > 0);
-
-            failed.clear();
+            sendRecords(records);
 
             lastFlush = System.currentTimeMillis();
             records.clear();
