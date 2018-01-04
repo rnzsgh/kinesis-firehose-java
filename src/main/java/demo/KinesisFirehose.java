@@ -32,6 +32,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
+import java.util.stream.Collectors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.CancellationException;
@@ -41,15 +42,16 @@ public class KinesisFirehose {
 
   private static final int RECORD_LENGTH = 1000;
   private static final int RECORD_BATCH_COUNT = 500;
+  private static final int MAX_QUEUE_SIZE = 30000;
   private static final long READ_TIMEOUT_MS = 250;
   private static final long BATCH_TIMEOUT_MS = 1000;
   private static final long BUFFER_TIMEOUT_MS = 250;
-  private static final int LOADER_THREADS = 2;
+  private static final int LOADER_THREADS = 4;
   private static final int REQUESTS_PER_SECOND = 5000;
   private static final String FIREHOSE_STREAM_NAME = "test";
 
   public static void main(final String [] pArgs) throws Exception {
-    final LinkedBlockingQueue<Record> queue = new LinkedBlockingQueue<>(Integer.MAX_VALUE); // This will blow out your memory
+    final LinkedBlockingQueue<Record> queue = new LinkedBlockingQueue<>(MAX_QUEUE_SIZE);
 
     // Assumes you are using an IAM role for credentials or have ~/.aws/credentials in place
     final AmazonKinesisFirehoseAsync firehoseClient = AmazonKinesisFirehoseAsyncClientBuilder.defaultClient();
@@ -114,10 +116,39 @@ public class KinesisFirehose {
       _streamName = pStreamName;
     }
 
-    private void addRecordsToQueue(final LinkedList<Record> pRecords) {
-      pRecords.forEach(r -> {
-        try { _queue.put(r); } catch (final Throwable t) { throw new IllegalStateException(t); }
-      });
+    /**
+     * Returns records unable to send.
+     */
+    private LinkedList<Record> sendRecords(final LinkedList<Record> pRecords) throws Exception {
+
+      try {
+
+        final LinkedList<Record> failed = new LinkedList<>();
+
+        final PutRecordBatchRequest request = new PutRecordBatchRequest();
+        request.setDeliveryStreamName(_streamName);
+        request.setRecords(pRecords);
+
+        final PutRecordBatchResult result  = _firehoseClient.putRecordBatchAsync(request).get();
+
+        int idx = 0;
+        for (final PutRecordBatchResponseEntry entry : result.getRequestResponses()) {
+
+          if (entry.getErrorCode() != null) {
+            failed.add(pRecords.get(idx));
+          }
+          idx++;
+        }
+
+        return failed;
+
+      } catch (final CancellationException ce) {
+        ce.printStackTrace();
+        return (LinkedList<Record>)pRecords.stream().collect(Collectors.toList());
+      } catch (final ExecutionException ee) {
+        ee.printStackTrace();
+        return (LinkedList<Record>)pRecords.stream().collect(Collectors.toList());
+      }
     }
 
     @Override public void run() {
@@ -140,42 +171,15 @@ public class KinesisFirehose {
             flushCount++;
             System.out.println("Flushing: " + flushCount + " - records: " + records.size());
 
-            // Flush
-            final PutRecordBatchRequest request = new PutRecordBatchRequest();
-            request.setDeliveryStreamName(_streamName);
-            request.setRecords(records);
+            LinkedList<Record> failed = records;
 
-            try {
+            do {
 
-              final PutRecordBatchResult result  = _firehoseClient.putRecordBatchAsync(request).get();
+              failed = sendRecords(records);
 
-              if (result.getFailedPutCount() > 0) {
-                System.out.println("failed count: " + result.getFailedPutCount());
-              }
+            } while (failed.size() > 0);
 
-              int idx = 0;
-              for (final PutRecordBatchResponseEntry entry : result.getRequestResponses()) {
-
-                // TODO: Check error codes
-                if (entry.getErrorCode() != null) {
-
-                  // Note: This may not work well because it could cause a deadlock if the queue is full
-                  // One thing to investigate is spilling over to SQS or disk
-                  _queue.put(records.get(idx));
-                }
-                idx++;
-              }
-
-              lastFlush = System.currentTimeMillis();
-
-            } catch (final CancellationException ce) {
-              addRecordsToQueue(records);
-              ce.printStackTrace();
-            } catch (final ExecutionException ee) {
-              addRecordsToQueue(records);
-              ee.printStackTrace();
-            }
-
+            lastFlush = System.currentTimeMillis();
             records.clear();
           }
         }
