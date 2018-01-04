@@ -176,7 +176,7 @@ public class KinesisFirehose {
 
         while (_running.get()) {
 
-          if (futures.size() >= 10) {
+          if (futures.size() >= 5) {
             if (checkFutures(futures)) {
               sleep(_readTimeout);
               continue;
