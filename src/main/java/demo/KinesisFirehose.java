@@ -157,7 +157,7 @@ public class KinesisFirehose {
 
     @Override public void run() {
       try {
-        final LinkedList<Record> records = new LinkedList<>();
+        LinkedList<Record> records = new LinkedList<>();
 
         long lastFlush = System.currentTimeMillis();
 
@@ -181,7 +181,11 @@ public class KinesisFirehose {
 
               failed = sendRecords(records);
 
+              records = failed;
+
             } while (failed.size() > 0);
+
+            failed.clear();
 
             lastFlush = System.currentTimeMillis();
             records.clear();
