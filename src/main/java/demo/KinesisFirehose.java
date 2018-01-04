@@ -32,6 +32,7 @@ import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehose;
 import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseClientBuilder;
 import com.amazonaws.services.kinesisfirehose.model.Record;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchRequest;
+import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchResponseEntry;
 
 // Java
 import java.nio.ByteBuffer;
@@ -148,9 +149,10 @@ public class KinesisFirehose {
           final PutRecordBatchResult result = future.get();
 
           if (result.getFailedPutCount() > 0) {
-            System.out.println("Failed put count: " + result.getFailedPutCount());
+            System.out.println("Failed count: " + result.getFailedPutCount());
             // TODO: Handle error conditions - loop through the  getRequestResponses()
-            // and process the failed records
+            // and process the failed records. This requires caching the records in memory
+            // until there is a confirmation that and then removing it
           }
 
           iter.remove();
@@ -176,7 +178,7 @@ public class KinesisFirehose {
 
         while (_running.get()) {
 
-          if (futures.size() >= 5) {
+          if (futures.size() >= 4) {
             if (checkFutures(futures)) {
               sleep(_readTimeout);
               continue;
