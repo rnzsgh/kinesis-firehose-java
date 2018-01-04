@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -58,7 +58,7 @@ public class KinesisFirehose {
   private static final String FIREHOSE_STREAM_NAME = "test";
 
   public static void main(final String [] pArgs) throws Exception {
-    final ArrayBlockingQueue<Record> queue = new ArrayBlockingQueue<>(10000);
+    final LinkedBlockingQueue<Record> queue = new LinkedBlockingQueue<>();
 
     final CountDownLatch countDownLatch = new CountDownLatch(LOADER_THREADS);
 
@@ -84,12 +84,12 @@ public class KinesisFirehose {
 
   private static class Producer extends Thread {
 
-    private final ArrayBlockingQueue<Record> _queue;
+    private final LinkedBlockingQueue<Record> _queue;
     private final int _recordCount;
     private final int _recordLength;
     private final AtomicBoolean _running;
 
-    public Producer(final ArrayBlockingQueue<Record> pQueue,
+    public Producer(final LinkedBlockingQueue<Record> pQueue,
                     final int pRecordCount,
                     final int pRecordLength,
                     final AtomicBoolean pRunning)
@@ -117,7 +117,7 @@ public class KinesisFirehose {
 
   private static class Loader extends Thread {
 
-    private final ArrayBlockingQueue<Record> _queue;
+    private final LinkedBlockingQueue<Record> _queue;
     private final CountDownLatch _countDownLatch;
     private final long _readTimeout;
     private final long _batchTimeout;
@@ -130,7 +130,7 @@ public class KinesisFirehose {
     //private final AmazonKinesisFirehose _firehoseClient = AmazonKinesisFirehoseClientBuilder.defaultClient();
     private final AmazonKinesisFirehoseAsync _firehoseClient = AmazonKinesisFirehoseAsyncClientBuilder.defaultClient();
 
-    public Loader(final ArrayBlockingQueue<Record> pQueue,
+    public Loader(final LinkedBlockingQueue<Record> pQueue,
                   final CountDownLatch pCountDownLatch,
                   final long pReadTimeout,
                   final long pBatchTimeout,
