@@ -40,7 +40,7 @@ import java.util.concurrent.ExecutionException;
 public class KinesisFirehose {
 
   private static final int RECORD_LENGTH = 1000;
-  private static final int RECORD_BATCH_COUNT = 101010101010101010;
+  private static final int RECORD_BATCH_COUNT = 10;
   private static final long READ_TIMEOUT_MS = 250;
   private static final long BATCH_TIMEOUT_MS = 1000;
   private static final long BUFFER_TIMEOUT_MS = 250;
