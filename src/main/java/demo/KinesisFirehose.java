@@ -46,7 +46,7 @@ public class KinesisFirehose {
   private static final long READ_TIMEOUT_MS = 250;
   private static final long BATCH_TIMEOUT_MS = 1000;
   private static final long BUFFER_TIMEOUT_MS = 250;
-  private static final int LOADER_THREADS = 6;
+  private static final int LOADER_THREADS = 10;
   private static final int REQUESTS_PER_SECOND = 5000;
   private static final String FIREHOSE_STREAM_NAME = "test";
 
