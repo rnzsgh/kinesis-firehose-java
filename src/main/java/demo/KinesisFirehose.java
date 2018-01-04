@@ -52,11 +52,12 @@ public class KinesisFirehose {
     final LinkedBlockingQueue<Record> queue = new LinkedBlockingQueue<>(Integer.MAX_VALUE); // This will blow out your memory
 
     // Assumes you are using an IAM role for credentials or have ~/.aws/credentials in place
-    private final AmazonKinesisFirehoseAsync _firehoseClient = AmazonKinesisFirehoseAsyncClientBuilder.defaultClient();
+    final AmazonKinesisFirehoseAsync firehoseClient = AmazonKinesisFirehoseAsyncClientBuilder.defaultClient();
 
     for (int idx=0; idx < LOADER_THREADS; idx++) {
       new Loader(
           queue,
+          firehoseClient,
           READ_TIMEOUT_MS,
           BATCH_TIMEOUT_MS,
           RECORD_BATCH_COUNT,
@@ -91,7 +92,7 @@ public class KinesisFirehose {
 
   private static class Loader extends Thread {
 
-    private final AmazonKinesisFirehoseAsync _firehoseClient
+    private final AmazonKinesisFirehoseAsync _firehoseClient;
     private final LinkedBlockingQueue<Record> _queue;
     private final long _readTimeout;
     private final long _batchTimeout;
