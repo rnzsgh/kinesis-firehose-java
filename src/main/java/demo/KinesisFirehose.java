@@ -140,13 +140,12 @@ public class KinesisFirehose {
         }
 
         pRecords.clear();
-        pRecords.addAll(failed);
 
         if (failed.size() > 0) {
           System.out.println("Failed count: " + failed.size());
+          pRecords.addAll(failed);
+          sendRecords(pRecords);
         }
-
-        sendRecords(pRecords);
 
       } catch (final CancellationException ce) {
         ce.printStackTrace();
