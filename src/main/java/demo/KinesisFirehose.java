@@ -81,7 +81,7 @@ public class KinesisFirehose {
     public Producer(final LinkedBlockingQueue<Record> pQueue, final int pRecordLength) throws Exception {
       _queue = pQueue;
       _testData = new String(new byte[pRecordLength]).getBytes("UTF-8");
-      _timer.scheduleAtFixedRate(this, 0, 1);
+      _timer.scheduleAtFixedRate(this, 500, 1);
     }
 
     @Override public void run() {
