@@ -1,6 +1,8 @@
 
 ## Kinesis Firehose Test
 
+A simple test of using the async Firehose writer
+
 Any code, applications, scripts, templates, proofs of concept,
 documentation and other items are provided for illustration purposes only.
 
