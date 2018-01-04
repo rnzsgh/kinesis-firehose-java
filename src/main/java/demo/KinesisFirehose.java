@@ -140,6 +140,28 @@ public class KinesisFirehose {
       _running = pRunning;
     }
 
+    private boolean checkFutures(final ArrayList<Future<PutRecordBatchResult>> pFutures) {
+      boolean same = true;
+      for (Iterator<Future<PutRecordBatchResult>> iter = pFutures.iterator(); iter.hasNext();) {
+        final Future<PutRecordBatchResult> future = iter.next();
+        if (future.isDone()) {
+          final PutRecordBatchResult result = future.get();
+
+          if (result.getFailedPutCount() > 0) {
+            System.out.println("Failed put count: " + result.getFailedPutCount());
+            // TODO: Handle error conditions - loop through the  getRequestResponses()
+            // and process the failed records
+          }
+
+          iter.remove();
+          same = false;
+          System.out.println("remove done - size: " + pFutures.size());
+        }
+      }
+
+      return same;
+    }
+
     @Override public void run() {
       try {
         String record = null;
@@ -153,6 +175,13 @@ public class KinesisFirehose {
         long flushCount = 0;
 
         while (_running.get()) {
+
+          if (futures.size() >= 10) {
+            if (checkFutures()) {
+              sleep(_readTimeout);
+              continue;
+            }
+          }
 
           record = _queue.poll(_readTimeout, TimeUnit.MILLISECONDS);
 
@@ -169,35 +198,21 @@ public class KinesisFirehose {
             request.setDeliveryStreamName(_streamName);
             request.setRecords(records.stream().collect(Collectors.toList()));
 
+            records.clear();
+            lastFlush = System.currentTimeMillis();
+
+            /*
             request.setRecords(records);
             final PutRecordBatchResult result = _firehoseClient.putRecordBatch(request);
             if (result.getFailedPutCount() > 0) {
               System.out.println("Failed put count: " + result.getFailedPutCount());
               // TODO: Handle error conditions - loop through the  getRequestResponses()
             }
-
-            records.clear();
-            lastFlush = System.currentTimeMillis();
-
-            /*
-            futures.add(_firehoseClient.putRecordBatchAsync(request));
-
-            for (Iterator<Future<PutRecordBatchResult>> iter = futures.iterator(); iter.hasNext();) {
-              final Future<PutRecordBatchResult> future = iter.next();
-              if (future.isDone()) {
-                final PutRecordBatchResult result = future.get();
-
-                if (result.getFailedPutCount() > 0) {
-                  System.out.println("Failed put count: " + result.getFailedPutCount());
-                  // TODO: Handle error conditions - loop through the  getRequestResponses()
-                }
-
-
-                iter.remove();
-                System.out.println("remove done - size: " + futures.size());
-              }
-            }
             */
+
+            futures.add(_firehoseClient.putRecordBatchAsync(request));
+            checkFutures();
+
           }
 
           // TODO: Handle errors
