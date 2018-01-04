@@ -65,7 +65,7 @@ public class KinesisFirehose {
       ).start();
     }
 
-    for (int idx=0; idx < (REQUESTS_PER_SECOND * 2) / 1000; idx++) {
+    for (int idx=0; idx < REQUESTS_PER_SECOND / 1000; idx++) {
       new Producer(queue, RECORD_LENGTH);
     }
 
