@@ -31,10 +31,7 @@ import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchResponseEntry;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.nio.ByteBuffer;
-import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.stream.Collectors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.CancellationException;
@@ -48,7 +45,7 @@ public class KinesisFirehose {
   private static final long READ_TIMEOUT_MS = 250;
   private static final long BATCH_TIMEOUT_MS = 1000;
   private static final long BUFFER_TIMEOUT_MS = 250;
-  private static final int LOADER_THREADS = 1;
+  private static final int LOADER_THREADS = 2;
   private static final int REQUESTS_PER_SECOND = 5000;
   private static final String FIREHOSE_STREAM_NAME = "test";
 
@@ -158,6 +155,9 @@ public class KinesisFirehose {
 
                 // TODO: Check error codes
                 if (entry.getErrorCode() != null) {
+
+                  // Note: This may not work well because it could cause a deadlock if the queue is full
+                  // One thing to investigate is spilling over to SQS or disk
                   _queue.put(records.get(idx));
                 }
                 idx++;
