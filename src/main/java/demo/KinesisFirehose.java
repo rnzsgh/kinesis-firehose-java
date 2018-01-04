@@ -140,7 +140,7 @@ public class KinesisFirehose {
       _running = pRunning;
     }
 
-    private boolean checkFutures(final ArrayList<Future<PutRecordBatchResult>> pFutures) {
+    private boolean checkFutures(final ArrayList<Future<PutRecordBatchResult>> pFutures) throws Exception {
       boolean same = true;
       for (Iterator<Future<PutRecordBatchResult>> iter = pFutures.iterator(); iter.hasNext();) {
         final Future<PutRecordBatchResult> future = iter.next();
@@ -177,7 +177,7 @@ public class KinesisFirehose {
         while (_running.get()) {
 
           if (futures.size() >= 10) {
-            if (checkFutures()) {
+            if (checkFutures(futures)) {
               sleep(_readTimeout);
               continue;
             }
@@ -211,7 +211,7 @@ public class KinesisFirehose {
             */
 
             futures.add(_firehoseClient.putRecordBatchAsync(request));
-            checkFutures();
+            checkFutures(futures);
 
           }
 
