@@ -1,0 +1,28 @@
+apply plugin: 'java'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile (
+		'com.amazonaws:aws-java-sdk-kinesis:1.11.257',
+	)
+}
+
+task buildZip(type: Zip) {
+	from compileJava
+ 	from processResources
+	into('lib') {
+		from configurations.runtime
+	}
+}
+
+task run(type:JavaExec) {
+   classpath = sourceSets.main.runtimeClasspath
+   main = 'demo.KinesisFirehose'
+}
+
+build.dependsOn buildZip
+
+defaultTasks 'buildZip'
