@@ -167,19 +167,19 @@ public class KinesisFirehose {
             // Flush
             final PutRecordBatchRequest request = new PutRecordBatchRequest();
             request.setDeliveryStreamName(_streamName);
-            //request.setRecords(records.stream().collect(Collectors.toList()));
+            request.setRecords(records.stream().collect(Collectors.toList()));
 
-            request.setRecords(records);
-            final PutRecordBatchResult result = _firehoseClient.putRecordBatch(request);
+            //request.setRecords(records);
+            /*final PutRecordBatchResult result = _firehoseClient.putRecordBatch(request);
             if (result.getFailedPutCount() > 0) {
               System.out.println("Failed put count: " + result.getFailedPutCount());
               // TODO: Handle error conditions - loop through the  getRequestResponses()
             }
+            */
 
             records.clear();
             lastFlush = System.currentTimeMillis();
 
-            /*
             futures.add(_firehoseClient.putRecordBatchAsync(request));
 
             for (Iterator<Future<PutRecordBatchResult>> iter = futures.iterator(); iter.hasNext();) {
@@ -197,7 +197,6 @@ public class KinesisFirehose {
                 System.out.println("remove done - size: " + futures.size());
               }
             }
-            */
 
 
 
