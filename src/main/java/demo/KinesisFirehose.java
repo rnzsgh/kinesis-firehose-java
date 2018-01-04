@@ -138,7 +138,7 @@ public class KinesisFirehose {
 
           if (records.size() >= _batchSize || ((System.currentTimeMillis() - lastFlush > _batchTimeout) && records.size() > 0)) {
             flushCount++;
-            System.out.println("Flushing: " + flushCount);
+            System.out.println("Flushing: " + flushCount + " - records: " + records.size());
 
             // Flush
             final PutRecordBatchRequest request = new PutRecordBatchRequest();
