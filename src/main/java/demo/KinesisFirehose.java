@@ -21,8 +21,8 @@ package demo;
 
 // Aws
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchResult;
-import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseAsync;
-import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseAsyncClientBuilder;
+import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehose;
+import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseClientBuilder;
 import com.amazonaws.services.kinesisfirehose.model.Record;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchRequest;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchResponseEntry;
@@ -53,7 +53,7 @@ public class KinesisFirehose {
     final LinkedBlockingQueue<Record> queue = new LinkedBlockingQueue<>(MAX_QUEUE_SIZE);
 
     // Assumes you are using an IAM role for credentials or have ~/.aws/credentials in place
-    final AmazonKinesisFirehoseAsync firehoseClient = AmazonKinesisFirehoseAsyncClientBuilder.defaultClient();
+    final AmazonKinesisFirehose firehoseClient = AmazonKinesisFirehoseClientBuilder.defaultClient();
 
     for (int idx=0; idx < LOADER_THREADS; idx++) {
       new Loader(
@@ -93,7 +93,7 @@ public class KinesisFirehose {
 
   private static class Loader extends Thread {
 
-    private final AmazonKinesisFirehoseAsync _firehoseClient;
+    private final AmazonKinesisFirehose _firehoseClient;
     private final LinkedBlockingQueue<Record> _queue;
     private final long _readTimeout;
     private final long _batchTimeout;
@@ -101,7 +101,7 @@ public class KinesisFirehose {
     private final String _streamName;
 
     public Loader(final LinkedBlockingQueue<Record> pQueue,
-                  final AmazonKinesisFirehoseAsync pFirehoseClient,
+                  final AmazonKinesisFirehose pFirehoseClient,
                   final long pReadTimeout,
                   final long pBatchTimeout,
                   final int pBatchSize,
@@ -125,7 +125,7 @@ public class KinesisFirehose {
         request.setDeliveryStreamName(_streamName);
         request.setRecords(pRecords);
 
-        final PutRecordBatchResult result  = _firehoseClient.putRecordBatchAsync(request).get();
+        final PutRecordBatchResult result  = _firehoseClient.putRecordBatch(request);
 
         int idx = 0;
         for (final PutRecordBatchResponseEntry entry : result.getRequestResponses()) {
