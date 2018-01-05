@@ -44,10 +44,9 @@ public class KinesisFirehose {
   private static final int RECORD_BATCH_COUNT = 500;
   private static final int MAX_QUEUE_SIZE = 30000;
   private static final long READ_TIMEOUT_MS = 250;
-  private static final long BATCH_TIMEOUT_MS = 1000;
-  private static final long BUFFER_TIMEOUT_MS = 250;
+  private static final long BATCH_TIMEOUT_MS = 2000;
   private static final int LOADER_THREADS = 15;
-  private static final int REQUESTS_PER_SECOND = 6000;
+  private static final int REQUESTS_PER_SECOND = 7000;
   private static final String FIREHOSE_STREAM_NAME = "test";
 
   public static void main(final String [] pArgs) throws Exception {
