@@ -1,7 +1,7 @@
 
 ## Kinesis Firehose Test
 
-A simple test of using the async Firehose client.
+A simple test of using the Firehose Java client.
 
 Any code, applications, scripts, templates, proofs of concept,
 documentation and other items are provided for illustration purposes only.
