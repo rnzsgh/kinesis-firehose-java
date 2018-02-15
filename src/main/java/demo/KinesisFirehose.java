@@ -81,22 +81,16 @@ public class KinesisFirehose {
   private static class Producer extends Thread {
 
     private final LinkedBlockingQueue<Record> _queue;
-    //private final Timer _timer = new Timer(true);
     private final byte[] _testData;
 
     public Producer(final LinkedBlockingQueue<Record> pQueue, final int pRecordLength) throws Exception {
       _queue = pQueue;
       _testData = new String(new byte[pRecordLength]).getBytes("UTF-8");
-      //_timer.scheduleAtFixedRate(this, 500, 1);
     }
 
     @Override public void run() {
       try {
-
-        while (true) {
-          _queue.put(new Record().withData(ByteBuffer.wrap(_testData)));
-        }
-
+        while (true) { _queue.put(new Record().withData(ByteBuffer.wrap(_testData))); }
       } catch (final Throwable t) { throw new IllegalStateException(t); }
     }
   }
@@ -169,7 +163,7 @@ public class KinesisFirehose {
 
     @Override public void run() {
       try {
-        LinkedList<Record> records = new LinkedList<>();
+        final LinkedList<Record> records = new LinkedList<>();
 
         long lastFlush = System.currentTimeMillis();
 
