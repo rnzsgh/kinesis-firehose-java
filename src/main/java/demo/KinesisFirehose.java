@@ -48,7 +48,7 @@ public class KinesisFirehose {
   private static final int MAX_QUEUE_SIZE = 100000;
   private static final long READ_TIMEOUT_MS = 250;
   private static final long BATCH_TIMEOUT_MS = 2000;
-  private static final int LOADER_THREADS = 20;
+  private static final int LOADER_THREADS = 15;
   private static final int RECORDS_PER_SECOND = 45000;
 
   private static final String FIREHOSE_STREAM_NAME = "test";
